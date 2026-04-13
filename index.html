@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>広告CSV整形ツール | HYPER NEON BURST MODE</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg0: #030307;
+    --bg1: #090014;
+    --bg2: #140022;
+    --bg3: #1f0033;
+    --pink: #ff1e8a;
+    --pink2: #ff73c7;
+    --cyan: #00eaff;
+    --cyan2: #8ff7ff;
+    --purple: #8b2cff;
+    --purple2: #c36bff;
+    --green: #4dff88;
+    --yellow: #fff06a;
+    --red: #ff476d;
+    --text: #fdfaff;
+    --muted: #dacff4;
+  }
+
+  @keyframes bgHue {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(24deg); }
+  }
+
+  @keyframes gridMoveA {
+    0% { background-position: 0 0, 0 0; }
+    100% { background-position: 0 80px, 80px 0; }
+  }
+
+  @keyframes pulseGlow {
+    0%,100% {
+      box-shadow:
+        0 0 18px rgba(255,30,138,.22),
+        0 0 36px rgba(0,234,255,.10),
+        0 20px 40px rgba(0,0,0,.32);
+    }
+    50% {
+      box-shadow:
+        0 0 28px rgba(255,30,138,.34),
+        0 0 56px rgba(0,234,255,.18),
+        0 24px 48px rgba(0,0,0,.38);
+    }
+  }
+
+  @keyframes neonText {
+    0%,100% {
+      text-shadow:
+        0 0 8px rgba(255,255,255,.40),
+        0 0 18px rgba(255,30,138,.42),
+        0 0 34px rgba(0,234,255,.14);
+    }
+    50% {
+      text-shadow:
+        0 0 12px rgba(255,255,255,.55),
+        0 0 26px rgba(255,30,138,.60),
+        0 0 48px rgba(0,234,255,.24);
+    }
+  }
+
+  @keyframes scanMove {
+    0% { transform: translateY(-120%); }
+    100% { transform: translateY(120vh); }
+  }
+
+  @keyframes orbFloat1 {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(40px,50px) scale(1.15); }
+  }
+
+  @keyframes orbFloat2 {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(-35px,30px) scale(1.2); }
+  }
+
+  @keyframes orbFloat3 {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(20px,-30px) scale(1.12); }
+  }
+
+  @keyframes spinBorder {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-140%); }
+    100% { transform: translateX(140%); }
+  }
+
+  @keyframes glitchA {
+    0%,100% { transform: translate(0); clip-path: inset(0 0 0 0); }
+    20% { transform: translate(-2px, 1px); clip-path: inset(0 0 68% 0); }
+    40% { transform: translate(2px, -1px); clip-path: inset(38% 0 24% 0); }
+    60% { transform: translate(-1px, 1px); clip-path: inset(72% 0 0 0); }
+    80% { transform: translate(1px, 0); clip-path: inset(12% 0 50% 0); }
+  }
+
+  @keyframes buttonGlow {
+    0%,100% { box-shadow: 0 0 16px rgba(255,30,138,.20), 0 8px 22px rgba(0,0,0,.24); }
+    50% { box-shadow: 0 0 28px rgba(0,234,255,.22), 0 10px 26px rgba(0,0,0,.28); }
+  }
+
+  @keyframes rowEnter {
+    0% {
+      opacity: 0;
+      transform: translateY(10px) scale(.985);
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+      filter: brightness(1.8);
+    }
+    45% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      box-shadow: 0 0 22px rgba(0,234,255,.14);
+      filter: brightness(1.3);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+      filter: brightness(1);
+    }
+  }
+
+  @keyframes burstRing {
+    0% {
+      opacity: .95;
+      transform: translate(-50%, -50%) scale(.2);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(2.4);
+    }
+  }
+
+  @keyframes burstCore {
+    0% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(.2);
+      filter: blur(0px);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(3.2);
+      filter: blur(14px);
+    }
+  }
+
+  @keyframes popParticle {
+    0% {
+      opacity: 1;
+      transform: translate(0, 0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(var(--dx), var(--dy)) scale(.2);
+    }
+  }
+
+  @keyframes flashOut {
+    0% { opacity: .55; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes clickRipple {
+    0% {
+      opacity: .9;
+      transform: translate(-50%, -50%) scale(.25);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(2.2);
+    }
+  }
+
+  html, body {
+    min-height: 100%;
+  }
+
+  body {
+    position: relative;
+    overflow-x: hidden;
+    min-height: 100vh;
+    padding: 36px 24px 48px;
+    color: var(--text);
+    font-family: 'Courier New', Menlo, monospace;
+    background:
+      radial-gradient(circle at 14% 18%, rgba(255,30,138,.18), transparent 16%),
+      radial-gradient(circle at 86% 16%, rgba(0,234,255,.14), transparent 16%),
+      radial-gradient(circle at 50% 110%, rgba(139,44,255,.22), transparent 26%),
+      linear-gradient(135deg, #030307 0%, #090014 28%, #140022 62%, #1f0033 100%);
+    animation: bgHue 10s ease-in-out infinite alternate;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size: 80px 80px, 80px 80px;
+    opacity: .20;
+    mix-blend-mode: screen;
+    animation: gridMoveA 7s linear infinite;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: -140px;
+    height: 160px;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(255,255,255,0),
+      rgba(0,234,255,.08),
+      rgba(255,30,138,.10),
+      rgba(255,255,255,0)
+    );
+    filter: blur(10px);
+    animation: scanMove 4.2s linear infinite;
+    opacity: .75;
+  }
+
+  .bg-orb {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(50px);
+    opacity: .28;
+    mix-blend-mode: screen;
+  }
+
+  .orb1 {
+    width: 220px;
+    height: 220px;
+    left: 4%;
+    top: 10%;
+    background: rgba(255,30,138,.70);
+    animation: orbFloat1 8s ease-in-out infinite;
+  }
+
+  .orb2 {
+    width: 260px;
+    height: 260px;
+    right: 6%;
+    top: 16%;
+    background: rgba(0,234,255,.65);
+    animation: orbFloat2 10s ease-in-out infinite;
+  }
+
+  .orb3 {
+    width: 300px;
+    height: 300px;
+    left: 34%;
+    bottom: -60px;
+    background: rgba(139,44,255,.60);
+    animation: orbFloat3 9s ease-in-out infinite;
+  }
+
+  #particle-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: .6;
+  }
+
+  .cursor-glow {
+    position: fixed;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(0,234,255,.16) 0%, rgba(255,30,138,.10) 35%, rgba(255,255,255,0) 72%);
+    filter: blur(16px);
+    z-index: 2;
+    mix-blend-mode: screen;
+  }
+
+  .screen-flash {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 90;
+    opacity: 0;
+    background:
+      radial-gradient(circle at center, rgba(255,255,255,.18), rgba(0,234,255,.10), rgba(255,30,138,.08), transparent 58%);
+  }
+
+  .screen-flash.active {
+    animation: flashOut .5s ease-out forwards;
+  }
+
+  .burst-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 95;
+    overflow: hidden;
+  }
+
+  .burst-ring,
+  .burst-core,
+  .burst-particle,
+  .btn-ripple {
+    position: absolute;
+    pointer-events: none;
+  }
+
+  .burst-ring {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 2px solid rgba(0,234,255,.95);
+    box-shadow:
+      0 0 20px rgba(0,234,255,.45),
+      0 0 34px rgba(255,30,138,.25);
+    animation: burstRing .7s ease-out forwards;
+  }
+
+  .burst-core {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.95), rgba(0,234,255,.55), rgba(255,30,138,.25), transparent 72%);
+    animation: burstCore .7s ease-out forwards;
+  }
+
+  .burst-particle {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow:
+      0 0 12px rgba(255,255,255,.55),
+      0 0 18px rgba(0,234,255,.35);
+    animation: popParticle .8s ease-out forwards;
+  }
+
+  .btn-ripple {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.72);
+    box-shadow:
+      0 0 16px rgba(255,255,255,.28),
+      0 0 26px rgba(0,234,255,.22);
+    animation: clickRipple .55s ease-out forwards;
+  }
+
+  .shell {
+    position: relative;
+    z-index: 3;
+    max-width: 1260px;
+    margin: 0 auto;
+  }
+
+  .header,
+  .drop-zone,
+  .results-header .count,
+  table,
+  .legend,
+  .format-preview {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+    border: 1px solid rgba(255,255,255,.16);
+    backdrop-filter: blur(14px);
+  }
+
+  .header {
+    margin-bottom: 30px;
+    padding: 24px 26px;
+    border-radius: 20px;
+    overflow: hidden;
+    animation: pulseGlow 2.6s ease-in-out infinite;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.04) inset,
+      0 0 24px rgba(255,30,138,.18),
+      0 0 42px rgba(0,234,255,.10),
+      0 20px 40px rgba(0,0,0,.32);
+  }
+
+  .header::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 20px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(255,30,138,.95), rgba(0,234,255,.95), rgba(139,44,255,.95));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .header::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(120deg, transparent 0 35%, rgba(255,255,255,.08) 42%, transparent 48%),
+      radial-gradient(circle at top right, rgba(255,255,255,.08), transparent 28%);
+  }
+
+  .header .label {
+    font-size: 11px;
+    letter-spacing: .3em;
+    color: #f7ecff;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    opacity: .95;
+  }
+
+  .glitch-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  .header h1 {
+    position: relative;
+    font-size: 31px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    color: #fff;
+    animation: neonText 2.2s ease-in-out infinite;
+    text-shadow: none;
+  }
+
+  .header h1::before,
+  .header h1::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .55;
+  }
+
+  .header h1::before {
+    color: rgba(255,30,138,.70);
+    transform: translate(2px, 0);
+    animation: glitchA 2.8s infinite linear alternate-reverse;
+  }
+
+  .header h1::after {
+    color: rgba(0,234,255,.70);
+    transform: translate(-2px, 0);
+    animation: glitchA 2.2s infinite linear alternate;
+  }
+
+  .header p {
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .drop-zone {
+    margin-bottom: 28px;
+    padding: 56px 28px;
+    border-radius: 22px;
+    text-align: center;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform .16s, box-shadow .16s, background .16s;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.04) inset,
+      0 0 24px rgba(139,44,255,.14),
+      0 20px 38px rgba(0,0,0,.32);
+  }
+
+  .drop-zone::before {
+    content: "";
+    position: absolute;
+    inset: -120px;
+    background: conic-gradient(
+      from 0deg,
+      rgba(255,30,138,0) 0deg,
+      rgba(255,30,138,.85) 55deg,
+      rgba(0,234,255,.90) 140deg,
+      rgba(139,44,255,.88) 220deg,
+      rgba(255,30,138,.85) 300deg,
+      rgba(255,30,138,0) 360deg
+    );
+    animation: spinBorder 5s linear infinite;
+    opacity: .55;
+    pointer-events: none;
+  }
+
+  .drop-zone::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border-radius: 20px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    backdrop-filter: blur(14px);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+    pointer-events: none;
+  }
+
+  .drop-inner {
+    position: relative;
+    z-index: 2;
+    border-radius: 14px;
+    padding: 22px;
+    border: 2px dashed rgba(255,255,255,.20);
+    box-shadow:
+      inset 0 0 18px rgba(255,30,138,.08),
+      0 0 20px rgba(0,234,255,.08);
+  }
+
+  .drop-zone:hover {
+    transform: translateY(-3px) scale(1.004);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.05) inset,
+      0 0 32px rgba(255,30,138,.20),
+      0 0 44px rgba(0,234,255,.14),
+      0 24px 42px rgba(0,0,0,.38);
+  }
+
+  .drop-zone.drag {
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.05) inset,
+      0 0 36px rgba(255,30,138,.30),
+      0 0 56px rgba(0,234,255,.24),
+      0 24px 46px rgba(0,0,0,.42);
+  }
+
+  .drop-zone .main-text {
+    position: relative;
+    z-index: 2;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: .04em;
+    animation: neonText 2s ease-in-out infinite;
+  }
+
+  .drop-zone .sub-text {
+    position: relative;
+    z-index: 2;
+    margin-top: 9px;
+    font-size: 12px;
+    color: #efe7ff;
+  }
+
+  #file-input {
+    display: none;
+  }
+
+  .results {
+    display: none;
+  }
+
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .results-header .count {
+    font-size: 12px;
+    color: #fff;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border-radius: 999px;
+    box-shadow:
+      0 0 16px rgba(255,30,138,.14),
+      0 0 24px rgba(0,234,255,.08);
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    position: relative;
+    overflow: hidden;
+    border: none;
+    cursor: pointer;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: inherit;
+    letter-spacing: .06em;
+    transition: transform .12s, filter .12s, opacity .12s;
+    animation: buttonGlow 2.8s ease-in-out infinite;
+  }
+
+  button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -50%;
+    width: 42%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
+    transform: skewX(-20deg);
+    animation: shimmer 2.6s linear infinite;
+    pointer-events: none;
+  }
+
+  button:hover {
+    transform: translateY(-2px) scale(1.02);
+    filter: brightness(1.06);
+    opacity: .98;
+  }
+
+  .btn-primary {
+    color: #130320;
+    background: linear-gradient(90deg, var(--yellow), #fff8aa, var(--cyan2));
+    box-shadow:
+      0 0 18px rgba(255,240,106,.24),
+      0 8px 22px rgba(0,0,0,.24);
+  }
+
+  .btn-danger {
+    color: #fff;
+    background: linear-gradient(90deg, var(--red), var(--pink), var(--purple));
+    box-shadow:
+      0 0 18px rgba(255,71,109,.22),
+      0 8px 22px rgba(0,0,0,.24);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.04) inset,
+      0 0 22px rgba(139,44,255,.12),
+      0 18px 38px rgba(0,0,0,.32);
+  }
+
+  thead tr {
+    background: linear-gradient(90deg, rgba(255,30,138,.22), rgba(0,234,255,.18), rgba(139,44,255,.22));
+    border-bottom: 1px solid rgba(255,255,255,.12);
+  }
+
+  th {
+    padding: 14px 16px;
+    text-align: left;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(255,30,138,.18);
+  }
+
+  th.right,
+  td.right {
+    text-align: right;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    transition: background .12s, box-shadow .12s, transform .12s;
+  }
+
+  tbody tr:hover {
+    background: rgba(255,255,255,.05);
+    box-shadow: inset 0 0 0 999px rgba(255,255,255,.01), 0 0 16px rgba(0,234,255,.06);
+  }
+
+  tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .row-enter {
+    animation: rowEnter .65s ease-out both;
+  }
+
+  td {
+    padding: 14px 16px;
+  }
+
+  .td-filename {
+    color: #ffeefe;
+    font-size: 12px;
+  }
+
+  .td-adcode {
+    color: #fff;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255,30,138,.14);
+  }
+
+  .td-mobile {
+    color: var(--green);
+    font-weight: 700;
+    text-shadow: 0 0 12px rgba(77,255,136,.28);
+  }
+
+  .td-pc {
+    color: var(--cyan2);
+    font-weight: 700;
+    text-shadow: 0 0 12px rgba(0,234,255,.24);
+  }
+
+  .td-skip {
+    color: #ff9aaa;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255,71,109,.18);
+  }
+
+  .td-total {
+    color: #fff08d;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255,240,106,.18);
+  }
+
+  .legend {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    font-size: 12px;
+    color: #f6edff;
+    box-shadow:
+      0 0 18px rgba(255,30,138,.08),
+      0 12px 28px rgba(0,0,0,.20);
+  }
+
+  .dot-green {
+    color: var(--green);
+    text-shadow: 0 0 8px rgba(77,255,136,.35);
+  }
+
+  .dot-blue {
+    color: var(--cyan2);
+    text-shadow: 0 0 8px rgba(0,234,255,.35);
+  }
+
+  .format-preview {
+    margin-top: 28px;
+    padding: 22px 24px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.04) inset,
+      0 0 22px rgba(0,234,255,.12),
+      0 16px 34px rgba(0,0,0,.28);
+    color: #fff7eb;
+  }
+
+  .format-preview::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(120deg, rgba(255,30,138,.08), transparent 30%, rgba(0,234,255,.08) 70%, transparent 100%);
+  }
+
+  .format-preview .title {
+    margin-bottom: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #fff;
+    animation: neonText 2.2s ease-in-out infinite;
+  }
+
+  .format-preview table {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    font-size: 12px;
+  }
+
+  .format-preview th {
+    padding: 5px 14px;
+    color: #fff;
+    border: none;
+    background: transparent;
+  }
+
+  .format-preview td {
+    padding: 6px 14px;
+    border: none;
+  }
+
+  .format-preview td.green {
+    color: var(--green);
+    font-weight: 700;
+  }
+
+  .format-preview td.blue {
+    color: var(--cyan2);
+    font-weight: 700;
+  }
+
+  .format-preview td.dim {
+    color: rgba(255,255,255,.50);
+  }
+
+  .format-preview td.kana {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .note {
+    margin-top: 14px;
+    color: #f2eaff;
+    font-size: 11px;
+    opacity: .92;
+  }
+
+  @media (max-width: 760px) {
+    body {
+      padding: 18px 12px 30px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+    }
+
+    .drop-zone {
+      padding: 42px 16px;
+    }
+
+    .drop-zone .main-text {
+      font-size: 15px;
+    }
+
+    th, td {
+      padding: 10px 8px;
+      font-size: 11px;
+    }
+
+    .cursor-glow {
+      display: none;
+    }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/encoding-japanese@2.2.0/encoding.min.js"></script>
+</head>
+<body>
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+<div class="bg-orb orb3"></div>
+<canvas id="particle-canvas"></canvas>
+<div class="cursor-glow" id="cursor-glow"></div>
+<div class="screen-flash" id="screen-flash"></div>
+<div class="burst-layer" id="burst-layer"></div>
+
+<div class="shell">
+
+  <div class="header">
+    <div class="label">Mail CSV Formatter / Hyper Neon Burst Mode</div>
+    <div class="glitch-wrap">
+      <h1 data-text="広告CSV整形ツール">広告CSV整形ツール</h1>
+    </div>
+    <p>複数CSVを投入 → 自動整形・結合 → 日付ファイルでダウンロード</p>
+  </div>
+
+  <div class="drop-zone" id="drop-zone">
+    <input type="file" id="file-input" accept=".csv" multiple>
+    <div class="drop-inner">
+      <div class="main-text" id="drop-text">CSVファイルを投入（複数同時OK）</div>
+      <div class="sub-text">クリックしてファイル選択も可</div>
+    </div>
+  </div>
+
+  <div class="results" id="results">
+    <div class="results-header">
+      <div class="count" id="results-count"></div>
+      <div class="btn-group">
+        <button class="btn-danger" onclick="clearAll()">クリア</button>
+        <button class="btn-primary" onclick="downloadMerged()">ネオン出力</button>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ファイル名</th>
+          <th>広告コード</th>
+          <th class="right">モバイル行数</th>
+          <th class="right">PC行数</th>
+          <th class="right">拒否除外</th>
+          <th class="right">合計行数</th>
+        </tr>
+      </thead>
+      <tbody id="results-body"></tbody>
+    </table>
+
+    <div class="legend">
+      <span><span class="dot-green">●</span> モバイル: au / docomo / softbank / vodafone 系</span>
+      <span><span class="dot-blue">●</span> PC: 上記以外（拒否リスト除外済み）</span>
+    </div>
+  </div>
+
+  <div class="format-preview">
+    <div class="title">出力フォーマット（1行1アドレス）</div>
+    <table>
+      <thead>
+        <tr><th>A列</th><th>B</th><th>C</th><th>D列</th><th>E列</th><th>F</th><th>G</th><th>H列</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="kana">あなた</td><td class="dim">空</td><td class="dim">空</td>
+          <td class="green">モバイルアドレス</td><td class="dim">空</td>
+          <td class="dim">空</td><td class="dim">空</td><td class="kana">広告コード</td>
+        </tr>
+        <tr>
+          <td class="kana">あなた</td><td class="dim">空</td><td class="dim">空</td>
+          <td class="dim">空</td><td class="blue">PCアドレス</td>
+          <td class="dim">空</td><td class="dim">空</td><td class="kana">広告コード</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note">出力ファイル名: 今日の日付.csv（例: 20260331.csv）　文字コード: Shift_JIS（CSVコンマ区切り）</div>
+  </div>
+
+</div>
+
+<script>
+const MOBILE_DOMAINS = new Set([
+  "au.com","c.vodafone.ne.jp","d.vodafone.ne.jp","docomo.ne.jp",
+  "ezweb.ne.jp","h.vodafone.ne.jp","i.softbank.jp","k.vodafone.ne.jp",
+  "n.vodafone.ne.jp","q.vodafone.ne.jp","r.vodafone.ne.jp","s.vodafone.ne.jp",
+  "t.vodafone.ne.jp","vodafone.ne.jp"
+]);
+
+const REJECT_LIST = new Set([
+  "kawamoto.kimiko@jp.panasonic.com","kawagoe@kentaku.co.jp",
+  "kato.kazunori@jp.panasonic.com","kashiwakura-katsuhiro@sistm.co.jp",
+  "kanzaki.shuichiro@jp.panasonic.com","kaname@ishida.co.jp",
+  "kakehata.ch@jp.panasonic.com","kaise.yoshinori@tepco.co.jp",
+  "jinji@seiko-sts.co.jp","iwanami.f@tepco.co.jp",
+  "iwanaga.2h4.okinori@krosaki.co.jp","iuchi.rie@kk.jp.panasonic.com",
+  "itou-ho2@kandenko.co.jp","ishii.hideaki@stepon.co.jp",
+  "ishihara@shimabun.co.jp","ishiguro_yoshihisa@grp.conveyor.co.jp",
+  "ishida@lifedesign.co.jp","ishibashi.mitsuru326@jp.panasonic.com",
+  "isamu.miyoshi@nittoc.co.jp","irii@maruhachi-co.jp",
+  "info-k@e-hakuba.com","info@minatostyle.co.jp",
+  "info@hiro-ex.com","info@discdog.co.jp","info@cedar.jp",
+  "imamura.taiki@jp.panasonic.com","ikurou.kishi@daikin.co.jp",
+  "ikeda.shinkichi@jp.panasonic.com","ichinose.yoshi@tepco.co.jp",
+  "huge@ehime-np.co.jp","htm_hirayama@daidokogyo.co.jp",
+  "htatsukawa@shinkoh-elecs.co.jp","hosting@ini.co.jp",
+  "honsyaeigyo@morihei.com","honsha_softcalm@toho-zinc.co.jp",
+  "honsha_kanri_system@toho-zinc.co.jp","hongkong_buhin@toho-zinc.co.jp",
+  "hiroyuki_yoshizawa@mufg.jp","hirotos@it.secnet.co.jp",
+  "hiroshi_kusama@pharm.kissei.co.jp","hiroki.koizumi@jp.yazaki.com",
+  "hiranuma.kanji@jp.panasonic.com","himejinishi@kentaku.co.jp",
+  "hideki.kamizono@jnfl.co.jp","hayashi@tsf.tgn.ne.jp",
+  "hayashi.hiroyuki243@jp.panasonic.com","hayashi.hiroyuki232@jp.panasonic.com",
+  "hayasaka.kyoko@jp.panasonic.com","hashizume.hiroyoshi@tepco.co.jp",
+  "hamanaka@star.fielding.nec.co.jp","greenfield@green-f.biz",
+  "g009jss-mng@ml.gakkai.ne.jp","funabashi@kentaku.co.jp",
+  "fukuyamah@kge.co.jp","fukuokanishi@kentaku.co.jp",
+  "fukui@daiwaliving.co.jp","fukuda@bsnnet.co.jp",
+  "fujisaw.koichi@jp.panasonic.com","fujikawa-n@star.fielding.nec.co.jp",
+  "fjinbo@dsk.daido.co.jp","e-takenokoshi@ac.daido.co.jp",
+  "emiko_uchiyama@mufg.jp","e-mailsaga1@saga-s.edu.city.kyoto.jp",
+  "eijirou_nishi@mufg.jp","edahiro.naoaki@jp.panasonic.com",
+  "eco-club@tepco.co.jp","e_info@shinseifinancial.co.jp",
+  "e.takahashi@port-of-nagoya.jp","demizu.yoshiyuki@stepon.co.jp",
+  "deform@yamanaka-eng.co.jp","dec-yoshimura@sog.daido.co.jp",
+  "dec-noda@sog.daido.co.jp","customer@nikkeimm.co.jp",
+  "contact@shiftbrain.co.jp","chushikoku@aaconst.co.jp",
+  "cad-master@photron.co.jp","business@jpccom.com",
+  "bbarker@tkw.com","bb3132@bigboyjapan.co.jp","bb3101@bigboyjapan.co.jp",
+  "atsuo-akiyo@toho-zinc.co.jp","asaoka.seiki@jp.panasonic.com",
+  "asai@fdk.co.jp","aokihi@aig.co.jp",
+  "aoki.hiroshi004@jp.panasonic.com","anzai@mxp.nes.nec.co.jp",
+  "amemiya.tomohiro@tepco.co.jp","akiyam@bsnnet.co.jp",
+  "akata-tomochika@toho-zinc.co.jp","ag05d@mail.yondenko.co.jp",
+  "ag.yokomizo.hideaki@metlife.co.jp","adsales@hatena.ne.jp",
+  "27392839.72071.sa.safeattach@mutoh.co.jp",
+  "200601241824164532.272@sog.daido.co.jp","0815@nakafu.com"
+]);
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isMobile(email) {
+  const domain = (email.split("@")[1] || "").toLowerCase();
+  return MOBILE_DOMAINS.has(domain);
+}
+
+function parseCSV(text) {
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const rows = [];
+  for (const line of text.split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    const cells = [];
+    let cur = "", inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') {
+        if (inQ && line[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQ = !inQ;
+        }
+      } else if (c === ',' && !inQ) {
+        cells.push(cur.trim());
+        cur = "";
+      } else {
+        cur += c;
+      }
+    }
+    cells.push(cur.trim());
+    rows.push(cells);
+  }
+  return rows;
+}
+
+let allResults = [];
+
+function processFile(name, text) {
+  const originalName = name;
+  const baseName = originalName.replace(/\.[^/.]+$/, "");
+  const adCode = "kaiun_" + baseName;
+  const rows = parseCSV(text);
+  let mobileEmails = [], pcEmails = [], skipCount = 0;
+
+  for (const row of rows) {
+    const cell = (row[0] || "").trim();
+    if (!EMAIL_RE.test(cell)) continue;
+    const email = cell.toLowerCase();
+
+    if (isMobile(email)) {
+      mobileEmails.push(email);
+    } else {
+      if (REJECT_LIST.has(email)) {
+        skipCount++;
+      } else {
+        pcEmails.push(email);
+      }
+    }
+  }
+
+  return { name: originalName, adCode, mobile: mobileEmails, pc: pcEmails, skip: skipCount };
+}
+
+function getTodayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function q(s) {
+  return `"${(s || "").replace(/"/g, '""')}"`;
+}
+
+function buildMergedCSV(results) {
+  const rows = [];
+  for (const r of results) {
+    for (const mob of r.mobile) {
+      rows.push([q("あなた"), q(""), q(""), q(mob), q(""), q(""), q(""), q(r.adCode)].join(","));
+    }
+    for (const pc of r.pc) {
+      rows.push([q("あなた"), q(""), q(""), q(""), q(pc), q(""), q(""), q(r.adCode)].join(","));
+    }
+  }
+  return rows.join("\r\n");
+}
+
+function triggerScreenFlash() {
+  const flash = document.getElementById("screen-flash");
+  flash.classList.remove("active");
+  void flash.offsetWidth;
+  flash.classList.add("active");
+}
+
+function triggerBurst(x = window.innerWidth / 2, y = window.innerHeight / 2) {
+  const layer = document.getElementById("burst-layer");
+
+  const ring = document.createElement("div");
+  ring.className = "burst-ring";
+  ring.style.left = x + "px";
+  ring.style.top = y + "px";
+
+  const core = document.createElement("div");
+  core.className = "burst-core";
+  core.style.left = x + "px";
+  core.style.top = y + "px";
+
+  layer.appendChild(ring);
+  layer.appendChild(core);
+
+  for (let i = 0; i < 26; i++) {
+    const p = document.createElement("div");
+    p.className = "burst-particle";
+    p.style.left = x + "px";
+    p.style.top = y + "px";
+    const angle = (Math.PI * 2 * i) / 26 + Math.random() * 0.28;
+    const dist = 70 + Math.random() * 120;
+    const dx = Math.cos(angle) * dist + "px";
+    const dy = Math.sin(angle) * dist + "px";
+    p.style.setProperty("--dx", dx);
+    p.style.setProperty("--dy", dy);
+
+    const pick = i % 3;
+    if (pick === 0) {
+      p.style.background = "rgba(0,234,255,.95)";
+      p.style.boxShadow = "0 0 12px rgba(0,234,255,.55), 0 0 18px rgba(255,255,255,.22)";
+    } else if (pick === 1) {
+      p.style.background = "rgba(255,30,138,.95)";
+      p.style.boxShadow = "0 0 12px rgba(255,30,138,.55), 0 0 18px rgba(255,255,255,.22)";
+    } else {
+      p.style.background = "rgba(255,240,106,.95)";
+      p.style.boxShadow = "0 0 12px rgba(255,240,106,.55), 0 0 18px rgba(255,255,255,.22)";
+    }
+
+    layer.appendChild(p);
+    setTimeout(() => p.remove(), 820);
+  }
+
+  setTimeout(() => ring.remove(), 720);
+  setTimeout(() => core.remove(), 720);
+  triggerScreenFlash();
+}
+
+function triggerButtonRipple(x, y) {
+  const layer = document.getElementById("burst-layer");
+  const ripple = document.createElement("div");
+  ripple.className = "btn-ripple";
+  ripple.style.left = x + "px";
+  ripple.style.top = y + "px";
+  layer.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 560);
+}
+
+function downloadMerged() {
+  if (allResults.length === 0) return;
+
+  const csv = buildMergedCSV(allResults);
+
+  const sjisArray = Encoding.convert(csv, {
+    to: "SJIS",
+    from: "UNICODE",
+    type: "array"
+  });
+
+  const uint8Array = new Uint8Array(sjisArray);
+  const blob = new Blob([uint8Array], { type: "text/csv" });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = getTodayStr() + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function renderResults() {
+  const tbody = document.getElementById("results-body");
+  tbody.innerHTML = "";
+  let totalMobile = 0, totalPc = 0, totalSkip = 0;
+
+  allResults.forEach((r, idx) => {
+    totalMobile += r.mobile.length;
+    totalPc += r.pc.length;
+    totalSkip += r.skip;
+
+    const tr = document.createElement("tr");
+    tr.className = "row-enter";
+    tr.style.animationDelay = `${idx * 60}ms`;
+    tr.innerHTML = `
+      <td class="td-filename">${escHtml(r.name)}</td>
+      <td class="td-adcode">${escHtml(r.adCode)}</td>
+      <td class="right td-mobile">${r.mobile.length.toLocaleString()}</td>
+      <td class="right td-pc">${r.pc.length.toLocaleString()}</td>
+      <td class="right td-skip">${r.skip.toLocaleString()}</td>
+      <td class="right td-total">${(r.mobile.length + r.pc.length).toLocaleString()}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  if (allResults.length > 1) {
+    const tr = document.createElement("tr");
+    tr.className = "row-enter";
+    tr.style.animationDelay = `${allResults.length * 60}ms`;
+    tr.style.cssText += ";border-top:2px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)";
+    tr.innerHTML = `
+      <td style="color:#fff;font-size:11px;letter-spacing:.10em;font-weight:700">TOTAL</td>
+      <td></td>
+      <td class="right td-mobile" style="font-weight:700">${totalMobile.toLocaleString()}</td>
+      <td class="right td-pc" style="font-weight:700">${totalPc.toLocaleString()}</td>
+      <td class="right td-skip" style="font-weight:700">${totalSkip.toLocaleString()}</td>
+      <td class="right td-total" style="font-weight:700">${(totalMobile + totalPc).toLocaleString()}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById("results-count").textContent = `${allResults.length}ファイル処理完了`;
+  document.getElementById("results").style.display = "block";
+}
+
+function clearAll() {
+  allResults = [];
+  document.getElementById("results").style.display = "none";
+  document.getElementById("results-body").innerHTML = "";
+  document.getElementById("drop-text").textContent = "CSVファイルを投入（複数同時OK）";
+  document.getElementById("file-input").value = "";
+  triggerBurst(window.innerWidth / 2, window.innerHeight / 2);
+}
+
+async function readFileSmart(file) {
+  const buffer = await file.arrayBuffer();
+  const uint8 = new Uint8Array(buffer);
+
+  let text = "";
+  try {
+    text = new TextDecoder("shift-jis").decode(uint8);
+  } catch (e) {
+    text = new TextDecoder("utf-8").decode(uint8);
+  }
+
+  if (!text || text.indexOf("�") !== -1) {
+    try {
+      text = new TextDecoder("utf-8").decode(uint8);
+    } catch (e) {}
+  }
+
+  return text;
+}
+
+async function handleFiles(files, burstX = window.innerWidth / 2, burstY = window.innerHeight / 2) {
+  const csvFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith(".csv"));
+  if (!csvFiles.length) return;
+
+  document.getElementById("drop-text").textContent = "ネオン処理中...";
+  triggerBurst(burstX, burstY);
+
+  const existingNames = new Set(allResults.map(r => r.name));
+  const targets = csvFiles.filter(f => !existingNames.has(f.name));
+
+  const processed = await Promise.all(
+    targets.map(async f => {
+      try {
+        const text = await readFileSmart(f);
+        return processFile(f.name, text);
+      } catch (e) {
+        return null;
+      }
+    })
+  );
+
+  allResults = [...allResults, ...processed.filter(Boolean)];
+  document.getElementById("drop-text").textContent = "さらに追加登録できます";
+  renderResults();
+}
+
+const dropZone = document.getElementById("drop-zone");
+const fileInput = document.getElementById("file-input");
+
+dropZone.addEventListener("click", () => fileInput.click());
+fileInput.addEventListener("change", e => handleFiles(e.target.files, window.innerWidth / 2, window.innerHeight / 2));
+
+dropZone.addEventListener("dragover", e => {
+  e.preventDefault();
+  dropZone.classList.add("drag");
+});
+
+dropZone.addEventListener("dragleave", () => {
+  dropZone.classList.remove("drag");
+});
+
+dropZone.addEventListener("drop", e => {
+  e.preventDefault();
+  dropZone.classList.remove("drag");
+  handleFiles(e.dataTransfer.files, e.clientX, e.clientY);
+});
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  triggerButtonRipple(e.clientX, e.clientY);
+});
+
+const cursorGlow = document.getElementById("cursor-glow");
+window.addEventListener("mousemove", (e) => {
+  cursorGlow.style.left = e.clientX + "px";
+  cursorGlow.style.top = e.clientY + "px";
+});
+
+const canvas = document.getElementById("particle-canvas");
+const ctx = canvas.getContext("2d");
+let particles = [];
+let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+window.addEventListener("mousemove", (e) => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+});
+
+function createParticles() {
+  const count = Math.min(90, Math.max(40, Math.floor(window.innerWidth / 18)));
+  particles = [];
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.55,
+      vy: (Math.random() - 0.5) * 0.55,
+      r: Math.random() * 2.2 + 0.8,
+      hue: Math.random() > 0.5 ? "cyan" : (Math.random() > 0.5 ? "pink" : "purple"),
+      alpha: Math.random() * 0.45 + 0.18
+    });
+  }
+}
+createParticles();
+window.addEventListener("resize", createParticles);
+
+function getParticleColor(type, alpha) {
+  if (type === "cyan") return `rgba(0,234,255,${alpha})`;
+  if (type === "pink") return `rgba(255,30,138,${alpha})`;
+  return `rgba(139,44,255,${alpha})`;
+}
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (const p of particles) {
+    const dx = mouse.x - p.x;
+    const dy = mouse.y - p.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < 140) {
+      p.x -= dx * 0.002;
+      p.y -= dy * 0.002;
+    }
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+    if (p.x < -20) p.x = canvas.width + 20;
+    if (p.x > canvas.width + 20) p.x = -20;
+    if (p.y < -20) p.y = canvas.height + 20;
+    if (p.y > canvas.height + 20) p.y = -20;
+
+    ctx.beginPath();
+    ctx.fillStyle = getParticleColor(p.hue, p.alpha);
+    ctx.shadowBlur = 14;
+    ctx.shadowColor = getParticleColor(p.hue, 0.9);
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.shadowBlur = 0;
+
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const a = particles[i];
+      const b = particles[j];
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 120) {
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(255,255,255,${(1 - d / 120) * 0.08})`;
+        ctx.lineWidth = 1;
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+</script>
+</body>
+</html>
